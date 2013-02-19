@@ -81,7 +81,7 @@ Unknown::Values::Instance - Internal value object for the "unknown" distribution
 
 =head1 VERSION
 
-version 0.001
+version 0.003
 
 =head1 DESCRIPTION
 

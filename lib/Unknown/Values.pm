@@ -31,7 +31,7 @@ Unknown::Values - Use 'unknown' values instead of undef ones
 
 =head1 VERSION
 
-version 0.001
+version 0.003
 
 =head1 SYNOPSIS
 
@@ -53,7 +53,7 @@ version 0.001
 
 =head1 DESCRIPTION
 
-This code is experimental. Some behavior may change.
+This code is alpha. Some behavior may change.
 
 This module provides you with two new keywords, C<unknown> and C<is_unknown>.
 From the point of view of logic, the is often an improvement over C<undef>
@@ -117,6 +117,20 @@ they compare to other values. Now replace the above with C<undef>:
     my @greater = grep { $_ > 4 } @numbers; # undef,5,6,undef,7
 
 In other words, you're probably getting garbage.
+
+=head1 EXPORTS
+
+=head2 C<unknown>
+
+    my $value = unknown;
+
+A safer replacement for C<undef>.
+
+=head2 C<is_unknown>
+
+    if ( is_unknown $value ) { ... }
+
+Test if a value is C<unknown>.
 
 =head1 FUNCTIONS
 

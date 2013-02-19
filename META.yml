@@ -2,7 +2,8 @@
 abstract: "Use 'unknown' values instead of undef ones"
 author:
   - "Curtis \"Ovid\" Poe <ovid@cpan.org>"
-build_requires: {}
+build_requires:
+  Test::Most: 0
 configure_requires:
   ExtUtils::MakeMaker: 6.30
 dynamic_config: 0
@@ -14,4 +15,4 @@ meta-spec:
 name: Unknown-Values
 resources:
   repository: git://github.com/Ovid/unknown.git
-version: 0.001
+version: 0.003
