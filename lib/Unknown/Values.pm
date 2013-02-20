@@ -13,7 +13,7 @@ use Scalar::Util 'blessed';
 our @EXPORT = qw(unknown is_unknown);
 use constant unknown => Unknown::Values::Instance->new;
 
-sub is_unknown($) {
+sub is_unknown(_) {
     defined $_[0]
       && blessed( $_[0] )
       && $_[0]->isa("Unknown::Values::Instance");
@@ -21,7 +21,7 @@ sub is_unknown($) {
 
 1;
 
-__END__
+
 
 =pod
 
@@ -31,7 +31,7 @@ Unknown::Values - Use 'unknown' values instead of undef ones
 
 =head1 VERSION
 
-version 0.003
+version 0.004
 
 =head1 SYNOPSIS
 
@@ -53,12 +53,13 @@ version 0.003
 
 =head1 DESCRIPTION
 
-This code is alpha. Some behavior may change.
+This code is alpha. Some behavior may change. The module name may change.
 
 This module provides you with two new keywords, C<unknown> and C<is_unknown>.
-From the point of view of logic, the is often an improvement over C<undef>
-values. Consider the following code, used to give underpaid employees a pay
-raise:
+
+C<unknown> is conceptually similar to the SQL C<NULL> value. From the point
+of view of logic, this often an improvement over C<undef> values. Consider the
+following code, used to give underpaid employees a pay raise:
 
     foreach my $employee (@employees) {
         if ( $employee->annual_salary < $threshold ) {
@@ -113,7 +114,7 @@ In other words, C<unknown> comparisons return false because we can't know how
 they compare to other values. Now replace the above with C<undef>:
 
     my @numbers = ( 1,2,3,4,undef,5,6,undef,7 );
-    my @less    = grep { $_ < 5 } @numbers; # 1,2,3,4,undef
+    my @less    = grep { $_ < 5 } @numbers; # 1,2,3,4,undef,undef
     my @greater = grep { $_ > 4 } @numbers; # undef,5,6,undef,7
 
 In other words, you're probably getting garbage.
@@ -124,13 +125,15 @@ In other words, you're probably getting garbage.
 
     my $value = unknown;
 
-A safer replacement for C<undef>.
+A safer replacement for C<undef>. Conceptually, C<unknown> behaves very
+similarly to SQL's C<NULL>.
 
 =head2 C<is_unknown>
 
     if ( is_unknown $value ) { ... }
 
-Test if a value is C<unknown>.
+Test if a value is C<unknown>. Do I<not> use C<< $value->isa(...) >> because
+the class is blessed into is not guaranteed.
 
 =head1 FUNCTIONS
 
@@ -152,6 +155,14 @@ Test whether a given value is C<unknown>.
         ... this is the only one for which this function returns true
     }
 
+Defaults to C<$_>:
+
+    foreach (@things) {
+        if ( is_unknown ) {
+            # do something
+        }
+    }
+
 =head1 EQUALITY
 
 An C<unknown> value is equal to nothing becuase we don't know what it's value
@@ -168,7 +179,7 @@ Use the C<is_unknown> function instead.
         ...
     }
 
-We also assume that inequality holds fails:
+We also assume that inequality fails:
 
     if ( 6 != unknown ) {
         ... always false
@@ -177,10 +188,10 @@ We also assume that inequality holds fails:
         ... always false
     }
 
-B<Note>: That's actually problematic because an unknown value doesn't mean a
-non-existent value, just an unknown one, so the value I<might> be equal, but
-we don't know it. From the standpoint of pure logic, it's wrong, but it's so
-awfully convenient that we've allowed it. We might revisit this.
+B<Note>: That's actually problematic because an unknown value should be equal
+to itself but not equal to I<other> unknown values. From the standpoint of
+pure logic, it's wrong, but it's so awfully convenient that we've allowed it.
+We might revisit this.
 
 =head1 ILLEGAL OPERATIONS
 
@@ -245,6 +256,48 @@ verification.
     true    || unknown is true
     false   || unknown is unknown
     unknown || unknown is unknown
+
+=head1 WHAT IS WRONG WITH UNDEF?
+
+Currently C<undef> has three different coercions: false, zero, or the empty
+string. Sometimes those are correct, but not always. Further, by design, it
+doesn't always emit warnings:
+
+    $ perl -Mstrict -Mwarnings -E 'my $foo; say ++$foo'
+    1
+    $ perl -Mstrict -Mwarnings -E 'my $foo; say $foo + 1'
+    Use of uninitialized value $foo in addition (+) at -e line 1.
+    1
+
+And because it has no precise definition, C<undef> might mean any of a number
+of things:
+
+=over 4
+
+=item * The value's not applicable
+
+=item * It's not known
+
+=item * It's not available
+
+=item * It's restricted
+
+=item * Something else?
+
+=back
+
+In other words, the behavior of C<undef> is overloaded, its meaning is
+ambiguous and you are not guaranteed to have warnings if you use it
+incorrectly.
+
+Now think about SQL's C<NULL> value. It's problematic, but no alternative has
+taken hold for simple reason: its meaning is clear and its behavior is
+unambiguous. It states quite clearly that 'if I don't have a value, I will
+treat that value as "unknown" via a set of well-defined rules'.
+
+An C<unknown> value behaves very much like the SQL C<NULL>. It's behavior is
+consistent and predictable. It's meaning is unambiguous. If used incorrectly,
+it's a fatal error.
 
 =head1 NOTES
 
@@ -347,3 +400,7 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
+
+
+__END__
+

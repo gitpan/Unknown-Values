@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-# ABSTRACT: Internal value object for the "unknown" distribution
+# ABSTRACT: Internal value object for the "Unknown::Values" distribution
 
 package Unknown::Values::Instance;
 use Carp 'confess';
@@ -11,10 +11,10 @@ my @to_overload;
 
 BEGIN {
     my %to_overload = (
-        compare     => [qw{ <=> cmp <= >= < > lt le gt ge == eq !+ ne}],
+        compare     => [qw{ <=> cmp <= >= < > lt le gt ge == eq != ne}],
         math        => [qw{ + - * / ** atan2 cos sin exp log sqrt int abs }],
         string      => [qw{ qr x }],
-        files       => [qw{ files -X }],
+        files       => [qw{ <> -X }],
         bits        => [qw{ << >> & | ^ ~ }],
         bool        => [ 'bool', '!' ],
         dereference => [qw< ${} @{} %{} &{} *{} >],
@@ -71,17 +71,17 @@ sub nomethod {
 
 1;
 
-__END__
+
 
 =pod
 
 =head1 NAME
 
-Unknown::Values::Instance - Internal value object for the "unknown" distribution
+Unknown::Values::Instance - Internal value object for the "Unknown::Values" distribution
 
 =head1 VERSION
 
-version 0.003
+version 0.004
 
 =head1 DESCRIPTION
 
@@ -99,3 +99,7 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
+
+
+__END__
+

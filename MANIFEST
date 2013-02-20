@@ -6,8 +6,10 @@ Makefile.PL
 README
 README.md
 dist.ini
+errors.err
 lib/Unknown/Values.pm
 lib/Unknown/Values/Instance.pm
+remarkdown
 t/basic.t
 t/bits.t
 t/logic.t
