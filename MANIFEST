@@ -4,13 +4,14 @@ MANIFEST
 META.yml
 Makefile.PL
 README
-README.md
 dist.ini
 errors.err
 lib/Unknown/Values.pm
 lib/Unknown/Values/Instance.pm
-remarkdown
+lib/Unknown/Values/Instance/Fatal.pm
+rebuild
 t/basic.t
 t/bits.t
+t/fatal.t
 t/logic.t
 t/math.t

@@ -7,11 +7,25 @@ package Unknown::Values;
 
 use 5.01000;
 use Unknown::Values::Instance;
+use Unknown::Values::Instance::Fatal;
 
-use base 'Exporter';
 use Scalar::Util 'blessed';
-our @EXPORT = qw(unknown is_unknown);
-use constant unknown => Unknown::Values::Instance->new;
+
+sub import {
+    my $class  = shift;
+    my $caller = caller;
+    
+    my $unknown_class = 'Unknown::Values::Instance';
+    if ( @_ && 'fatal' eq $_[0] ) {
+        $unknown_class = 'Unknown::Values::Instance::Fatal';
+    }
+    my $unknown        = $unknown_class->new;
+    my $unknown_sub    = "${caller}::unknown";
+    my $is_unknown_sub = "${caller}::is_unknown";
+    no strict 'refs';
+    *$unknown_sub = sub () {$unknown};
+    *$is_unknown_sub = \&is_unknown;
+}
 
 sub is_unknown(_) {
     defined $_[0]
@@ -23,6 +37,9 @@ sub is_unknown(_) {
 
 
 
+
+
+
 =pod
 
 =head1 NAME
@@ -31,7 +48,7 @@ Unknown::Values - Use 'unknown' values instead of undef ones
 
 =head1 VERSION
 
-version 0.004
+version 0.005
 
 =head1 SYNOPSIS
 
@@ -49,6 +66,17 @@ version 0.004
         if ( $employee->salary < $threshold ) {
             push @underpaid => $employee;
         }
+    }
+
+Or:
+
+    use Unknown::Values 'fatal';
+    my $value = unknown;
+
+    if ( 3 < $value ) { ... } # fatal error
+
+    if ( is_unknown $value ) { # not a fatal error
+        ...
     }
 
 =head1 DESCRIPTION
@@ -163,6 +191,32 @@ Defaults to C<$_>:
         }
     }
 
+If you have specified C<< use Unknown::Values 'fatal' >>, this is the I<only>
+safe use for C<unknown> values. Any other use is fatal.
+
+=head1 SORTING
+
+C<unknown> values sort to the end of the list, unless you reverse the sort.
+
+    my @sorted = sort { $a <=> $b } ( 4, 1, unknown, 5, unknown, unknown, 7 );
+    eq_or_diff \@sorted, [ 1, 4, 5, 7, unknown, unknown, unknown ],
+      'Unknown values should sort at the end of the list';
+    my @sorted = sort { $b <=> $a } ( 4, 1, unknown, 5, unknown, unknown, 7 );
+    eq_or_diff \@sorted, [ unknown, unknown, unknown, 7, 5, 4, 1 ],
+      '... but the sort to the front in reverse';
+
+This is a bit arbitrary, but some decision had to be made and I thought that
+you'd rather deal with known values first:
+
+    my @things = sort @other_things;
+    foreach (@things) {
+        last if is_unknown;
+        # work with known values
+    }
+
+Note that if you specify C<< use Unknown::Values 'fatal' >>, sorting an
+unknown value is fatal.
+
 =head1 EQUALITY
 
 An C<unknown> value is equal to nothing becuase we don't know what it's value
@@ -193,10 +247,14 @@ to itself but not equal to I<other> unknown values. From the standpoint of
 pure logic, it's wrong, but it's so awfully convenient that we've allowed it.
 We might revisit this.
 
+Note that if you specify C<< use Unknown::Values 'fatal' >>, testing for
+equality is fatal.
+
 =head1 ILLEGAL OPERATIONS
 
 Attempting to use C<unknown> values in ways that don't make sense is a fatal
-error.
+error (unless you specified C<< use Unknown::Values 'fatal' >>, in which case,
+using C<unknown> values in I<any> way other than with C<is_unknown> is fatal).
 
     my $value1;
     $value1 += 1; # results in 1
@@ -240,6 +298,10 @@ Or test to see if it's C<unknown>:
 
 We follow Kleene's traditional 3VL (three-value logic). See C<t/logic.t> for
 verification.
+
+Note that if you specify C<< use Unknown::Values 'fatal' >>, all boolean
+checks with C<unknown> values are fatal. Use C<is_unknown> to test for unknown
+values.
 
 =head2 Logical Negation
 
@@ -387,6 +449,17 @@ every operator and ensuring that it's handled correctly.
 
 Of course, this would eat up both memory and performance and certainly be
 filled with fiddly bugs.
+
+=head1 AUTHOR
+
+Curtis "Ovid" Poe <ovid@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2013 by Curtis "Ovid" Poe.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =head1 AUTHOR
 

@@ -14,7 +14,7 @@ meta-spec:
   version: 1.4
 name: Unknown-Values
 requires:
-  Perl: 5.010
+  perl: 5.010
 resources:
   repository: git://github.com/Ovid/unknown.git
-version: 0.004
+version: 0.005
